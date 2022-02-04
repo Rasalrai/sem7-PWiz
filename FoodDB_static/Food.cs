@@ -6,14 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FoodDB1
+namespace FoodDB_static
 {
     public class Food : Interfaces.IFood
     {
         public int ID { get; set; }
         public string Name { get; set; }
         public IProducer Producer { get; set; }
-        public DateTime ExpiryDate { get; set; }
+        public string ExpiryDate { get; set; }
         public Storage Storage { get; set; }
     }
 }

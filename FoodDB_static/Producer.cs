@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FoodDB1
+namespace FoodDB_static
 {
     public class Producer : Interfaces.IProducer
     {

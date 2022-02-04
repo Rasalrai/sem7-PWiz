@@ -49,13 +49,16 @@ namespace FridgeManagerWPF.ViewModels
         }
 
         [Required]
-        //[Range(1886, 2022)] TODO
+        // TODO validate range
+        //[Range(1886, 2022)]
         public DateTime ExpiryDate
         {
-            get => food.ExpiryDate;
+            //get => DateTime.ParseExact(food.ExpiryDate, "yyyy-MM-dd",
+            //    System.Globalization.CultureInfo.InvariantCulture);
+            get => DateTime.Parse(food.ExpiryDate, System.Globalization.CultureInfo.CurrentCulture);
             set
             {
-                food.ExpiryDate = value;
+                food.ExpiryDate = value.ToString("yyyy-MM-dd");
                 RaisePropertyChanged(nameof(ExpiryDate));
             }
         }
@@ -125,32 +128,6 @@ namespace FridgeManagerWPF.ViewModels
             }
         }
 
-        // temp
-        /*
-        private void validateFoodID()
-        {
-            List<string> errors = new List<string>();
-            if (FoodID < 0)
-            {
-                errors.Add("ID must be a positive integer");
-            }
-            if (FoodID > 100)
-            {
-                errors.Add("Your fridge is full!");
-            }
-
-            if (_validationErrors.ContainsKey(nameof(FoodID)))
-            {
-                _validationErrors.Remove(nameof(FoodID));
-            }
-            if (errors.Count > 0)
-            {
-                _validationErrors[nameof(FoodID)] = errors;
-            }
-            RaiseErrorsChanged(nameof(FoodID));
-        }
-        */
-
         public void Validate()
         {
             var validationContext = new ValidationContext(this, null, null);
@@ -191,6 +168,13 @@ namespace FridgeManagerWPF.ViewModels
         {
             BLC.BLC blc = BLC.BLC.GetBLC();
             blc.SaveItem(food);
+            IsChanged = false;
+        }
+
+        public void Remove()
+        {
+            BLC.BLC blc = BLC.BLC.GetBLC();
+            blc.RemoveItem(food);
             IsChanged = false;
         }
 

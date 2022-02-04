@@ -22,7 +22,7 @@ namespace FoodDBEF
         }
         public Producer Producer { get; set; }
 
-        public DateTime ExpiryDate { get; set; }
+        public string ExpiryDate { get; set; }
         public Storage Storage { get; set; }
     }
 }

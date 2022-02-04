@@ -11,7 +11,7 @@ namespace Interfaces
         int ID { get; set; }
         string Name { get; set; }
         IProducer Producer { get; set; }
-        DateTime ExpiryDate { get; set; }
+        string ExpiryDate { get; set; }
         Core.Storage Storage { get; set; }
     }
 }

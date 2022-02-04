@@ -52,9 +52,15 @@ namespace BLC
         {
             return dao.CreateNewItem();
         }
+
         public void SaveItem(Interfaces.IFood f)
         {
             dao.SaveItem(f);
+        }
+
+        public void RemoveItem(Interfaces.IFood f)
+        {
+            dao.RemoveItem(f);
         }
 
         public IEnumerable<Interfaces.IProducer> GetProducers()

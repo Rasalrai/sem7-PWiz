@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FoodDB1
+namespace FoodDB_static
 {
     public class DAOMock : Interfaces.IDAO
     {
@@ -24,10 +24,10 @@ namespace FoodDB1
 
             food = new List<IFood>()
             {
-                new Food() {ID=1, Producer=producers[0], Name="Mleko owsiane", Storage=Core.Storage.Fridge, ExpiryDate=new DateTime(2022, 2, 11)},
-                new Food() {ID=2, Producer=producers[0], Name="Jogurt sojowy", Storage=Core.Storage.Fridge, ExpiryDate=new DateTime(2022, 2, 16)},
-                new Food() {ID=3, Producer=producers[2], Name="Tofu wędzone", Storage=Core.Storage.Freezer, ExpiryDate=new DateTime(2022, 3, 1)},
-                new Food() {ID=4, Producer=producers[3], Name="Kotlety sojowe", Storage=Core.Storage.Cupboard, ExpiryDate=new DateTime(2023, 5, 1)}
+                new Food() {ID=1, Producer=producers[0], Name="Mleko owsiane", Storage=Core.Storage.Fridge, ExpiryDate="2022-02-11"},
+                new Food() {ID=2, Producer=producers[0], Name="Jogurt sojowy", Storage=Core.Storage.Fridge, ExpiryDate="2022-02-16"},
+                new Food() {ID=3, Producer=producers[2], Name="Tofu wędzone", Storage=Core.Storage.Freezer, ExpiryDate="2022-03-01"},
+                new Food() {ID=4, Producer=producers[3], Name="Kotlety sojowe", Storage=Core.Storage.Cupboard, ExpiryDate="2023-05-22"}
             };
 
 
@@ -36,7 +36,7 @@ namespace FoodDB1
         {
             IFood f = new Food();
             f.Producer = producers[0];
-            f.ExpiryDate = DateTime.Today.AddDays(7);
+            f.ExpiryDate = DateTime.Today.AddDays(7).ToString("yyyy-MM-dd");
             f.Storage = Core.Storage.Cupboard;
             return f;
         }
@@ -53,8 +53,15 @@ namespace FoodDB1
 
         public void SaveItem(IFood f)
         {
-            // todo validation
-            food.Add(f);
+            if (food != null)
+            {
+                food.Add(f);
+            }
+        }
+
+        public void RemoveItem(IFood f)
+        {
+            food.Remove(f);
         }
     }
 }

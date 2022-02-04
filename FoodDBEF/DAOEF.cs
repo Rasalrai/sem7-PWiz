@@ -20,7 +20,7 @@ namespace FoodDBEF
             IFood f = new Food();
             //f.Producer = producers[0];
             f.Storage = Core.Storage.Fridge;
-            f.ExpiryDate = DateTime.Today.AddDays(7);
+            f.ExpiryDate = DateTime.Today.AddDays(7).ToString("yyyy-MM-dd");
             return f;
         }
 
@@ -36,7 +36,16 @@ namespace FoodDBEF
 
         public void SaveItem(IFood food)
         {
-            Foods.Add(food as Food);
+            if (food != null)
+            {
+                Foods.Add(food as Food);
+            }
+            SaveChanges();
+        }
+
+        public void RemoveItem(IFood food)
+        {
+            Foods.Remove(food as Food);
             SaveChanges();
         }
 

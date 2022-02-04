@@ -62,8 +62,9 @@ namespace FridgeManagerWPF.ViewModels
             SelectedItem = null;
 
             addNewItemCmd = new RelayCommand(AddNewItem, param => CanAddNewItem());
-            saveItemCommand = new RelayCommand(param => AddItemToList(), param => CanAddToList());
-            filterDataCommand = new RelayCommand(param => FilterData());
+            saveItemCmd = new RelayCommand(param => SaveChanges(), param => CanAddToList());
+            removeItemCmd = new RelayCommand(param => RemoveItem(), param => CanRemove());
+            filterDataCmd = new RelayCommand(param => FilterData());
         }
         private void RaisePropertyChanged(string propertyName)
         {
@@ -71,6 +72,11 @@ namespace FridgeManagerWPF.ViewModels
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
+        }
+
+        private void _saveDB()
+        {
+            blc.SaveItem(null);
         }
 
         #region AddNewItem Command implementation
@@ -101,6 +107,22 @@ namespace FridgeManagerWPF.ViewModels
             return EditedItem == null || !EditedItem.IsChanged;
         }
 
+        private void SaveChanges()
+        {
+            // add newly created item
+            // TODO compare selected and edited, like in remove cmd
+            if (SelectedItem == null)
+            {
+                AddItemToList();
+            }
+            // just update db with up-to-date data of existing items
+            else if (!EditedItem.HasErrors)
+            {
+                // TODO save changes in DAO
+                _saveDB();
+            }
+        }
+
         private void AddItemToList()
         {
             if (!EditedItem.HasErrors)
@@ -109,6 +131,7 @@ namespace FridgeManagerWPF.ViewModels
                 EditedItem.SaveItem();
                 EditedItem = null;
             }
+            // TODO else: display error
         }
 
         private bool CanAddToList()
@@ -118,6 +141,25 @@ namespace FridgeManagerWPF.ViewModels
                 return false;
             }
             return !EditedItem.HasErrors;
+        }
+
+        private void RemoveItem()
+        {
+            // item that's not yet saved
+            if (SelectedItem != EditedItem)
+            {
+                EditedItem = null;
+            }
+            else
+            {
+                EditedItem.Remove();
+                Food.Remove(EditedItem);
+            }
+        }
+
+        private bool CanRemove()
+        {
+            return !(SelectedItem == null && EditedItem == null);
         }
 
         private FoodViewModel selectedItem = null;
@@ -161,11 +203,11 @@ namespace FridgeManagerWPF.ViewModels
             }
         }
 
-        private RelayCommand filterDataCommand;
+        private RelayCommand filterDataCmd;
 
-        public ICommand FilterDataCommand
+        public ICommand FilterDataCmd
         {
-            get => filterDataCommand;
+            get => filterDataCmd;
         }
 
         private RelayCommand addNewItemCmd;
@@ -175,11 +217,18 @@ namespace FridgeManagerWPF.ViewModels
             get => addNewItemCmd;
         }
 
-        private RelayCommand saveItemCommand;
+        private RelayCommand saveItemCmd;
 
-        public ICommand SaveItemCommand
+        public ICommand SaveItemCmd
         {
-            get => saveItemCommand;
+            get => saveItemCmd;
+        }
+
+        private RelayCommand removeItemCmd;
+
+        public ICommand RemoveItemCmd
+        {
+            get => removeItemCmd;
         }
 
         #endregion
