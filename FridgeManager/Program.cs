@@ -12,7 +12,7 @@ namespace FridgeManager
             var libName = ConfigurationManager.AppSettings["dbName"];
             BLC.BLC blc = BLC.BLC.GetBLC();
 
-            foreach ( Interfaces.IFood c in blc.GetFood())
+            foreach (Interfaces.IFood c in blc.GetFood())
             {
                 Console.WriteLine(c.Name);
             }

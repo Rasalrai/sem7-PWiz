@@ -1,9 +1,6 @@
 ﻿using Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FoodDB_static
 {
@@ -16,10 +13,10 @@ namespace FoodDB_static
         {
             producers = new List<IProducer>()
             {
-                new Producer() {ID=1, Name="Alpro"},
-                new Producer() {ID=2, Name="Violife"},
-                new Producer() {ID=3, Name="Polsoja"},
-                new Producer() {ID=4, Name="Sante"}
+                new Producer() {ID=1, Name="Alpro", Residence=Core.Region.Europe},
+                new Producer() {ID=2, Name="Violife", Residence=Core.Region.Europe},
+                new Producer() {ID=3, Name="Polsoja", Residence=Core.Region.Poland},
+                new Producer() {ID=4, Name="Sante", Residence=Core.Region.Poland}
             };
 
             food = new List<IFood>()
@@ -29,9 +26,8 @@ namespace FoodDB_static
                 new Food() {ID=3, Producer=producers[2], Name="Tofu wędzone", Storage=Core.Storage.Freezer, ExpiryDate="2022-03-01"},
                 new Food() {ID=4, Producer=producers[3], Name="Kotlety sojowe", Storage=Core.Storage.Cupboard, ExpiryDate="2023-05-22"}
             };
-
-
         }
+
         public IFood CreateNewItem()
         {
             IFood f = new Food();
@@ -46,11 +42,6 @@ namespace FoodDB_static
             return food;
         }
 
-        public IEnumerable<IProducer> GetAllProducers()
-        {
-            return producers;
-        }
-
         public void SaveItem(IFood f)
         {
             if (food != null)
@@ -63,5 +54,32 @@ namespace FoodDB_static
         {
             food.Remove(f);
         }
+
+        #region Producers
+
+        public IEnumerable<IProducer> GetAllProducers()
+        {
+            return producers;
+        }
+
+        public IProducer CreateNewProducer()
+        {
+            return new Producer();
+        }
+
+        public void SaveProducer(IProducer producer)
+        {
+            if (producer != null)
+            {
+                producers.Add(producer as Producer);
+            }
+        }
+
+        public void RemoveProducer(IProducer producer)
+        {
+            producers.Remove(producer as Producer);
+        }
+
+        #endregion
     }
 }

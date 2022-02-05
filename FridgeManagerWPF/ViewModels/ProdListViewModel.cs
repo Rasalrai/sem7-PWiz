@@ -6,24 +6,13 @@ using System.Windows.Input;
 
 namespace FridgeManagerWPF.ViewModels
 {
-    public class FoodListViewModel : INotifyPropertyChanged
+    public class ProdListViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private ObservableCollection<FoodViewModel> food;
-        public ObservableCollection<FoodViewModel> Food
-        {
-            get => food;
-            set
-            {
-                food = value;
-                RaisePropertyChanged(nameof(Food));
-            }
-        }
+        private ObservableCollection<ProdViewModel> producers;
 
-        private ObservableCollection<Interfaces.IProducer> producers;
-
-        public ObservableCollection<Interfaces.IProducer> Producers
+        public ObservableCollection<ProdViewModel> Producers
         {
             get => producers;
             set
@@ -37,35 +26,31 @@ namespace FridgeManagerWPF.ViewModels
 
         private ListCollectionView view;
 
-        public FoodListViewModel()
+        public ProdListViewModel()
         {
             BLC.BLC.LibName = ConfigurationManager.AppSettings["dbName"];
             blc = BLC.BLC.GetBLC();
 
-            food = new ObservableCollection<FoodViewModel>();
-            view = (ListCollectionView)CollectionViewSource.GetDefaultView(food);
+            producers = new ObservableCollection<ProdViewModel>();
+            view = (ListCollectionView)CollectionViewSource.GetDefaultView(producers);
 
-            foreach (var f in blc.GetFood())
+            foreach (var p in blc.GetProducers())
             {
-                Food.Add(new FoodViewModel(f));
-                if (f.ID > maxID)
+                Producers.Add(new ProdViewModel(p));
+                if (p.ID > maxID)
                 {
-                    maxID = f.ID;
+                    maxID = p.ID;
                 }
             }
-            RaisePropertyChanged(nameof(Food));
-
-            Producers = new ObservableCollection<Interfaces.IProducer>(blc.GetProducers());
-
-            //Action<object> act = AddNewItem;
+            RaisePropertyChanged(nameof(Producers));
 
             EditedItem = null;
             SelectedItem = null;
 
-            addNewItemCmd = new RelayCommand(AddNewItem, param => CanAddNewItem());
-            saveItemCmd = new RelayCommand(param => SaveChanges(), param => CanAddToList());
-            removeItemCmd = new RelayCommand(param => RemoveItem(), param => CanRemove());
-            filterDataCmd = new RelayCommand(param => FilterData());
+            addNewProdCmd = new RelayCommand(AddNewItem, param => CanAddNewItem());
+            saveProdCmd = new RelayCommand(param => SaveChanges(), param => CanAddToList());
+            removeProdCmd = new RelayCommand(param => RemoveItem(), param => CanRemove());
+            filterProdDataCmd = new RelayCommand(param => FilterProdData());
         }
 
         private void RaisePropertyChanged(string propertyName)
@@ -83,9 +68,9 @@ namespace FridgeManagerWPF.ViewModels
 
         #region Command implementation
 
-        private FoodViewModel editedItem = null;
+        private ProdViewModel editedItem = null;
 
-        public FoodViewModel EditedItem
+        public ProdViewModel EditedItem
         {
             get => editedItem;
             set
@@ -99,17 +84,15 @@ namespace FridgeManagerWPF.ViewModels
 
         private void AddNewItem(object obj)
         {
-            //Food.Add(new FoodViewModel(blc.CreateNewItem()));
-            FoodViewModel fvm = new FoodViewModel(blc.CreateNewItem());
-            EditedItem = fvm;
-            fvm.IsChanged = true;
+            ProdViewModel pvm = new ProdViewModel(blc.CreateNewProducer());
+            EditedItem = pvm;
+            pvm.IsChanged = true;
             SelectedItem = null;
 
             maxID++;
-            fvm.FoodID = maxID;
+            pvm.ProdID = maxID;
         }
 
-        // for creating new items
         private bool CanAddNewItem()
         {
             return EditedItem == null || !EditedItem.IsChanged;
@@ -131,7 +114,7 @@ namespace FridgeManagerWPF.ViewModels
         {
             if (!EditedItem.HasErrors)
             {
-                food.Add(editedItem);
+                producers.Add(editedItem);
                 EditedItem.SaveItem();
                 EditedItem = null;
             }
@@ -151,7 +134,7 @@ namespace FridgeManagerWPF.ViewModels
             // item that's not yet saved
             if (SelectedItem != EditedItem)
             {
-                if (EditedItem.FoodID == maxID)
+                if (EditedItem.ProdID == maxID)
                 {
                     maxID--;
                 }
@@ -161,7 +144,7 @@ namespace FridgeManagerWPF.ViewModels
             else
             {
                 EditedItem.Remove();
-                Food.Remove(EditedItem);
+                Producers.Remove(EditedItem);
                 EditedItem = null;
                 SelectedItem = null;
             }
@@ -172,9 +155,9 @@ namespace FridgeManagerWPF.ViewModels
             return !(SelectedItem == null && EditedItem == null);
         }
 
-        private FoodViewModel selectedItem = null;
+        private ProdViewModel selectedItem = null;
 
-        public FoodViewModel SelectedItem
+        public ProdViewModel SelectedItem
         {
             get => selectedItem;
             set
@@ -189,56 +172,56 @@ namespace FridgeManagerWPF.ViewModels
             }
         }
 
-        private string filterValue;
+        private string filterProdValue;
 
-        public string FilterValue
+        public string FilterProdValue
         {
-            get => filterValue;
+            get => filterProdValue;
             set
             {
-                filterValue = value;
+                filterProdValue = value;
             }
         }
 
-        private void FilterData()
+        private void FilterProdData()
         {
-            if (string.IsNullOrWhiteSpace(filterValue))
+            if (string.IsNullOrWhiteSpace(filterProdValue))
             {
                 view.Filter = null;
             }
             else
             {
-                view.Filter = (f) => ((FoodViewModel)f).Name.ToLower().Contains(filterValue.ToLower());
-                view.SortDescriptions.Add(new SortDescription(nameof(FoodViewModel.FoodID), ListSortDirection.Ascending));
+                view.Filter = (p) => ((ProdViewModel)p).Name.ToLower().Contains(filterProdValue.ToLower());
+                view.SortDescriptions.Add(new SortDescription(nameof(ProdViewModel.ProdID), ListSortDirection.Ascending));
             }
         }
 
-        private RelayCommand filterDataCmd;
+        private RelayCommand filterProdDataCmd;
 
-        public ICommand FilterDataCmd
+        public ICommand FilterProdDataCmd
         {
-            get => filterDataCmd;
+            get => filterProdDataCmd;
         }
 
-        private RelayCommand addNewItemCmd;
+        private RelayCommand addNewProdCmd;
 
-        public ICommand AddNewItemCmd
+        public ICommand AddNewProdCmd
         {
-            get => addNewItemCmd;
+            get => addNewProdCmd;
         }
 
-        private RelayCommand saveItemCmd;
+        private RelayCommand saveProdCmd;
 
-        public ICommand SaveItemCmd
+        public ICommand SaveProdCmd
         {
-            get => saveItemCmd;
+            get => saveProdCmd;
         }
 
-        private RelayCommand removeItemCmd;
+        private RelayCommand removeProdCmd;
 
-        public ICommand RemoveItemCmd
+        public ICommand RemoveProdCmd
         {
-            get => removeItemCmd;
+            get => removeProdCmd;
         }
 
         #endregion

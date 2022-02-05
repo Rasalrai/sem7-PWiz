@@ -8,20 +8,20 @@
         xmlns:core="clr-namespace:Core;assembly=Core"
         xmlns:VMs="clr-namespace:FridgeManagerWPF.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="700"
-        Name="Okno">
+        Title="Fridge Manager UI" Height="450" Width="600"
+        Name="Okno"
+        Closing="OnWindowCloseAttempt">
     <Window.Resources>
+        <Style x:Key="BiggerButton" TargetType="{x:Type Button}">
+            <Setter Property="FontSize" Value="20"></Setter>
+            <Setter Property="Margin" Value="2 10"></Setter>
+            <Setter Property="Padding" Value="4"></Setter>
+        </Style>
         <Style x:Key="TextBoxWithErrors" TargetType="{x:Type TextBox}">
             <Setter Property="Validation.ErrorTemplate">
                 <Setter.Value>
                     <ControlTemplate>
                         <DockPanel LastChildFill="True">
-                            <!--<TextBlock DockPanel.Dock="Bottom"
-                                Foreground="Orange"
-                                FontSize="9pt"
-                                Text="{Binding ElementName=ErrComp,Path=AdornedElement.(Validation.Errors)[0].ErrorContent}"/>
-                            <TextBox DockPanel.Dock="Right" Foreground="Red">!</TextBox>-->
-
                             <ListBox DockPanel.Dock="Bottom"
                                      Name="lstErrors"
                                      ItemsSource="{Binding ElementName=ErrComp,Path=AdornedElement.(Validation.Errors)}">
@@ -47,6 +47,30 @@
             <Setter Property="VerticalAlignment" Value="Center"></Setter>
             <Setter Property="MinWidth" Value="150"></Setter>
         </Style>
+        <Style x:Key="Dropdown" TargetType="{x:Type ComboBox}">
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="MinWidth" Value="150"></Setter>
+        </Style>
+        <Style x:Key="DatePickerCheckExpired" TargetType="{x:Type DatePicker}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsExpired}" Value="True">
+                    <Setter Property="BorderBrush" Value="OrangeRed"></Setter>
+                    <Setter Property="BorderThickness" Value="3"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="MinWidth" Value="150"></Setter>
+        </Style>
+        <Style x:Key="Expired" TargetType="{x:Type Label}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=IsExpired}" Value="True">
+                    <Setter Property="Foreground" Value="OrangeRed"></Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
         <ObjectDataProvider x:Key="Storage"
                             ObjectType="{x:Type system:Enum}"
                             MethodName="GetValues" >
@@ -54,35 +78,49 @@
                 <x:Type Type="{x:Type core:Storage}" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+        <ObjectDataProvider x:Key="Region"
+                            ObjectType="{x:Type system:Enum}"
+                            MethodName="GetValues" >
+            <ObjectDataProvider.MethodParameters>
+                <x:Type Type="{x:Type core:Region}" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        
         <local:NullValueConverter x:Key="NullValConv"/>
     </Window.Resources>
     <Window.DataContext>
-        <VMs:FoodListViewModel/>
+        <VMs:AllViewModel/>
+        <!--<VMs:ProdListViewModel/>-->
     </Window.DataContext>
     <Grid>
         <TabControl>
-            <TabItem Header="Products">
+            <TabItem Header="Products" DataContext="{Binding F}">
                 <DockPanel>
-                    <StackPanel DockPanel.Dock="Left">
-                        <Button Command="{Binding AddNewItemCmd}">➕</Button>
-                        <Button Command="{Binding SaveItemCmd}">💾</Button>
-                        <Button Command="{Binding RemoveItemCmd}">🗑</Button>
+                    <StackPanel MinWidth="150" DockPanel.Dock="Left">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                            <Button Command="{Binding AddNewItemCmd}" Style="{StaticResource BiggerButton}" ToolTip="Add new item">➕</Button>
+                            <Button Command="{Binding SaveItemCmd}" Style="{StaticResource BiggerButton}" ToolTip="Save">💾</Button>
+                            <Button Command="{Binding RemoveItemCmd}" Style="{StaticResource BiggerButton}" ToolTip="Remove item">🗑</Button>
+                        </StackPanel>
 
-                        <TextBox Text="{Binding FilterValue}"/>
-                        <Button Command="{Binding FilterDataCmd}">🔎</Button>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                            <Label>Filter: </Label>
+                            <Button Command="{Binding FilterDataCmd}">🔎</Button>
+                        </StackPanel>
+                        <TextBox Text="{Binding FilterValue}" Margin="0 0 0 15"/>
                         <ListBox Name="ListProducts" ItemsSource="{Binding Food}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Label Content="{Binding FoodID}" MaxWidth="30"/>
-                                        <Label Content="{Binding Name}" MinWidth="80"/>
-                                        <Label Content="{Binding ExpiryDate}" MinWidth="50"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                                        <Label Content="{Binding FoodID}" MinWidth="20" HorizontalContentAlignment="Right"/>
+                                        <Label Content="{Binding Name}" MinWidth="100"/>
+                                        <Label Content="{Binding ExpiryDateStr}" MinWidth="50" Style="{StaticResource Expired}" />
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
                     </StackPanel>
-                    <Grid DataContext="{Binding EditedItem}">
+                    <Grid DataContext="{Binding EditedItem}" VerticalAlignment="Top" Margin="10 5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition></ColumnDefinition>
                             <ColumnDefinition></ColumnDefinition>
@@ -96,59 +134,82 @@
                             <RowDefinition></RowDefinition>
                         </Grid.RowDefinitions>
 
-                        <Label Grid.Row="0" Grid.Column="0">Item ID</Label>
-                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FoodID,ValidatesOnNotifyDataErrors=True}" Style="{StaticResource TextBoxWithErrors}"></TextBox>
+                        <Label Grid.Row="0" Grid.Column="0" Height="70">Item ID</Label>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FoodID,ValidatesOnNotifyDataErrors=True}" Style="{StaticResource TextBoxWithErrors}" IsEnabled="False"></TextBox>
 
-                        <Label Grid.Row="1" Grid.Column="0">Name</Label>
+                        <Label Grid.Row="1" Grid.Column="0" Height="70">Name</Label>
                         <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Name,ValidatesOnNotifyDataErrors=True}" Style="{StaticResource TextBoxWithErrors}"></TextBox>
 
-                        <Label Grid.Row="2" Grid.Column="0">Producer</Label>
-                        <!--<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Producer,ValidatesOnNotifyDataErrors=True}" Style="{StaticResource TextBoxWithErrors}"></TextBox>-->
+                        <Label Grid.Row="2" Grid.Column="0" Height="70">Producer</Label>
                         <ComboBox Grid.Row="2" Grid.Column="1"
-                      ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor},
-                                    Path=DataContext.Producers}"
-                      DisplayMemberPath="Name"
-                      SelectedItem="{Binding Producer}" />
+                                  ItemsSource="{Binding RelativeSource={RelativeSource AncestorType=Window,Mode=FindAncestor},
+                                                Path=DataContext.F.Producers}"
+                                  DisplayMemberPath="Name"
+                                  SelectedItem="{Binding Producer}"
+                                  Style="{StaticResource Dropdown}" />
 
-                        <Label Grid.Row="3" Grid.Column="0">Where</Label>
-                        <!--<TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Transmission,ValidatesOnNotifyDataErrors=True}" Style="{StaticResource TextBoxWithErrors}"></TextBox>-->
+                        <Label Grid.Row="3" Grid.Column="0" Height="70">Where</Label>
                         <ComboBox Grid.Row="3" Grid.Column="1"
-                      Text="{Binding Storage}"
-                      ItemsSource="{Binding Source={StaticResource Storage}}" />
+                                  Text="{Binding Storage}"
+                                  ItemsSource="{Binding Source={StaticResource Storage}}"
+                                  Style="{StaticResource Dropdown}" />
 
-                        <Label Grid.Row="4" Grid.Column="0">Expires on</Label>
-                        <DatePicker Grid.Row="4" Grid.Column="1" SelectedDate="{Binding ExpiryDate}"></DatePicker>
-                        <!--<TextBox Grid.Row="4" Grid.Column="1" Text="{Binding ProductionYear,ValidatesOnNotifyDataErrors=True}" Style="{StaticResource TextBoxWithErrors}">
-                            </TextBox> -->
-
+                        <Label Grid.Row="4" Grid.Column="0" Height="70">Expires on</Label>
+                        <DatePicker Grid.Row="4" Grid.Column="1" SelectedDate="{Binding ExpiryDate}" Style="{StaticResource DatePickerCheckExpired}"></DatePicker>
                     </Grid>
                 </DockPanel>
             </TabItem>
-            <TabItem Header="Producers">
+            <TabItem Header="Producers" DataContext="{Binding P}">
                 <DockPanel>
                     <StackPanel DockPanel.Dock="Left">
-                        <Button Command="{Binding AddNewProdCmd}">Add new item</Button>
-                        <Button Command="{Binding SaveProdCmd}">
-                            Save
-                        </Button>
-                        <Button Command="{Binding RemoveProdCmd}">Remove</Button>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                            <Button Command="{Binding AddNewProdCmd}" Style="{StaticResource BiggerButton}" ToolTip="Add new item">➕</Button>
+                            <Button Command="{Binding SaveProdCmd}" Style="{StaticResource BiggerButton}" ToolTip="Save">💾</Button>
+                            <Button Command="{Binding RemoveProdCmd}" Style="{StaticResource BiggerButton}" ToolTip="Remove item">🗑</Button>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                            <Label>Filter:</Label>
+                            <Button Command="{Binding FilterProdDataCmd}">🔎</Button>
+                        </StackPanel>
+                        <TextBox Text="{Binding FilterProdValue}" Margin="0 0 0 15"/>
                         
-                        <TextBox Text="{Binding FilterProdValue}"/>
-                        <Button Command="{Binding FilterProdDataCmd}">Filter</Button>
                         <ListBox Name="ListProducers" ItemsSource="{Binding Producers}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
-                                        <Label Content="{Binding ID}" MaxWidth="30"/>
-                                        <Label Content="{Binding Name}" MinWidth="80"/>
-                                        <Label Content="{Binding Residence}" MinWidth="50"/>
+                                        <Label Content="{Binding ProdID}" MinWidth="20" HorizontalContentAlignment="Right" />
+                                        <Label Content="{Binding Name}" MinWidth="70" />
+                                        <Label Content="{Binding Residence}" MinWidth="50" />
                                     </StackPanel>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
                     </StackPanel>
-                    <Grid DockPanel.Dock="Right">
-                        
+                    <Grid DataContext="{Binding EditedItem}" VerticalAlignment="Top" Margin="10 5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition></ColumnDefinition>
+                            <ColumnDefinition></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition></RowDefinition>
+                            <RowDefinition></RowDefinition>
+                            <RowDefinition></RowDefinition>
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Height="70">Producer ID</Label>
+                        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding ProdID,ValidatesOnNotifyDataErrors=True}" Style="{StaticResource TextBoxWithErrors}" IsEnabled="False"></TextBox>
+
+                        <Label Grid.Row="1" Grid.Column="0" Height="70">Name</Label>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Name,ValidatesOnNotifyDataErrors=True}" Style="{StaticResource TextBoxWithErrors}"></TextBox>
+
+                        <Label Grid.Row="2" Grid.Column="0" Height="70">Residence</Label>
+                        <ComboBox Grid.Row="2" Grid.Column="1"
+                                  Text="{Binding Residence}"
+                                  ItemsSource="{Binding Source={StaticResource Region}}"
+                                  Style="{StaticResource Dropdown}" />
+
                     </Grid>
                 </DockPanel>
             </TabItem>

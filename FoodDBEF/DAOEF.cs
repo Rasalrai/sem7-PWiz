@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FoodDBEF
 {
@@ -16,9 +14,7 @@ namespace FoodDBEF
 
         IFood IDAO.CreateNewItem()
         {
-            // TODO
             IFood f = new Food();
-            //f.Producer = producers[0];
             f.Storage = Core.Storage.Fridge;
             f.ExpiryDate = DateTime.Today.AddDays(7).ToString("yyyy-MM-dd");
             return f;
@@ -27,11 +23,6 @@ namespace FoodDBEF
         IEnumerable<IFood> IDAO.GetAllFood()
         {
             return Foods.ToList();
-        }
-
-        IEnumerable<IProducer> IDAO.GetAllProducers()
-        {
-            return Producers.ToList();
         }
 
         public void SaveItem(IFood food)
@@ -55,5 +46,33 @@ namespace FoodDBEF
             string dbPath = @"Fridge.db";
             optionsBuilder.UseSqlite($"Filename={dbPath}");
         }
+
+        #region Producers
+
+        IEnumerable<IProducer> IDAO.GetAllProducers()
+        {
+            return Producers.ToList();
+        }
+
+        public IProducer CreateNewProducer()
+        {
+            return new Producer();
+        }
+        public void SaveProducer(IProducer producer)
+        {
+            if (producer != null)
+            {
+                Producers.Add(producer as Producer);
+            }
+            SaveChanges();
+        }
+
+        public void RemoveProducer(IProducer producer)
+        {
+            Producers.Remove(producer as Producer);
+            SaveChanges();
+        }
+
+        #endregion
     }
 }

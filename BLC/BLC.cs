@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+
 namespace BLC
 {
     public sealed class BLC
@@ -18,7 +19,6 @@ namespace BLC
 
             foreach (var t in a.GetTypes())
             {
-                //IDAOType.IsAssignableFrom(T)
                 if (t.IsAssignableTo(IDAOType))
                 {
                     typeToCreate = t;
@@ -63,9 +63,28 @@ namespace BLC
             dao.RemoveItem(f);
         }
 
+        #region producers
+
         public IEnumerable<Interfaces.IProducer> GetProducers()
         {
             return dao.GetAllProducers();
         }
+
+        public Interfaces.IProducer CreateNewProducer()
+        {
+            return dao.CreateNewProducer();
+        }
+
+        public void SaveProducer(Interfaces.IProducer p)
+        {
+            dao.SaveProducer(p);
+        }
+
+        public void RemoveProducer(Interfaces.IProducer p)
+        {
+            dao.RemoveProducer(p);
+        }
+
+        #endregion
     }
 }

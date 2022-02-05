@@ -7,30 +7,30 @@ using System.Linq;
 
 namespace FridgeManagerWPF.ViewModels
 {
-    public class FoodViewModel : INotifyPropertyChanged, INotifyDataErrorInfo
+    public class ProdViewModel : INotifyPropertyChanged, INotifyDataErrorInfo
     {
         #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
         #endregion
 
-        private Interfaces.IFood food;
+        private Interfaces.IProducer producer;
 
-        public FoodViewModel(Interfaces.IFood _food)
+        public ProdViewModel(Interfaces.IProducer _prod)
         {
-            food = _food;
+            producer = _prod;
             IsChanged = false;
         }
 
         [Required(ErrorMessage = "Cannot be empty")]
         [Key]
         [Range(1, int.MaxValue, ErrorMessage = "Must be greater than 0")]
-        public int FoodID
+        public int ProdID
         {
-            get => food.ID;
+            get => producer.ID;
             set
             {
-                food.ID = value;
-                RaisePropertyChanged(nameof(FoodID));
+                producer.ID = value;
+                RaisePropertyChanged(nameof(ProdID));
             }
         }
 
@@ -39,47 +39,21 @@ namespace FridgeManagerWPF.ViewModels
         [MaxLength(50, ErrorMessage = "Must be between 3 and 50 characters")]
         public string Name
         {
-            get => food.Name;
+            get => producer.Name;
             set
             {
-                food.Name = value;
+                producer.Name = value;
                 RaisePropertyChanged(nameof(Name));
             }
         }
 
-        [Required]
-        public DateTime ExpiryDate
+        public Core.Region Residence
         {
-            get => DateTime.Parse(food.ExpiryDate, System.Globalization.CultureInfo.CurrentCulture);
+            get => producer.Residence;
             set
             {
-                food.ExpiryDate = value.ToString("yyyy-MM-dd");
-                RaisePropertyChanged(nameof(ExpiryDate));
-            }
-        }
-
-        public string ExpiryDateStr
-        {
-            get => ExpiryDate.ToString("dd.MM.yy");
-        }
-
-        public Core.Storage Storage
-        {
-            get => food.Storage;
-            set
-            {
-                food.Storage = value;
-                RaisePropertyChanged(nameof(Storage));
-            }
-        }
-
-        public Interfaces.IProducer Producer
-        {
-            get => food.Producer;
-            set
-            {
-                food.Producer = value;
-                RaisePropertyChanged(nameof(Producer));
+                producer.Residence = value;
+                RaisePropertyChanged(nameof(Residence));
             }
         }
 
@@ -165,14 +139,14 @@ namespace FridgeManagerWPF.ViewModels
         public void SaveItem()
         {
             BLC.BLC blc = BLC.BLC.GetBLC();
-            blc.SaveItem(food);
+            blc.SaveProducer(producer);
             IsChanged = false;
         }
 
         public void Remove()
         {
             BLC.BLC blc = BLC.BLC.GetBLC();
-            blc.RemoveItem(food);
+            blc.RemoveProducer(producer);
             IsChanged = false;
         }
 
@@ -185,14 +159,6 @@ namespace FridgeManagerWPF.ViewModels
             {
                 isChanged = value;
                 RaisePropertyChanged(nameof(IsChanged));
-            }
-        }
-
-        public bool IsExpired
-        {
-            get
-            {
-                return ExpiryDate < DateTime.Today;
             }
         }
     }

@@ -15,5 +15,9 @@ namespace Interfaces
 
         void SaveItem(IFood food);
         void RemoveItem(IFood food);
+
+        IProducer CreateNewProducer();
+        void SaveProducer(IProducer producer);
+        void RemoveProducer(IProducer producer);
     }
 }
